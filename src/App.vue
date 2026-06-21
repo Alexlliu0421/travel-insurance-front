@@ -1,11 +1,15 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { onMounted } from 'vue'
+import { useAuthStore } from './stores/authStore'
+
+const authStore = useAuthStore()
+
+// App 啟動時，從 localStorage 還原登入狀態（重新整理頁面後不會被登出）
+onMounted(() => {
+  authStore.loadFromStorage()
+})
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <router-view />
 </template>
-
-<style scoped></style>
