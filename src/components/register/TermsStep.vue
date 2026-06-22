@@ -106,19 +106,22 @@ function checkAllAgreed() {
         </div>
 
         <q-list bordered class="q-mb-md">
-            <q-expansion-item v-for="(term, index) in terms" :key="index" default-opened>
-                <template #header>
-                    <q-checkbox :model-value="term.agreed" disable class="q-mr-sm" />
-                    <q-item-section>{{ term.title }}</q-item-section>
-                </template>
+            <template v-for="(term, index) in terms" :key="index">
+                <q-separator v-if="index > 0" />
+                <q-expansion-item default-opened>
+                    <template #header>
+                        <q-checkbox :model-value="term.agreed" disable class="q-mr-sm" />
+                        <q-item-section>{{ term.title }}</q-item-section>
+                    </template>
 
-                <q-card>
-                    <q-card-section style="max-height: 150px; overflow-y: auto"
-                        @scroll="(e: Event) => handleScroll(e, index)">
-                        <pre style="white-space: pre-wrap; font-family: inherit">{{ term.content }}</pre>
-                    </q-card-section>
-                </q-card>
-            </q-expansion-item>
+                    <q-card>
+                        <q-card-section style="max-height: 150px; overflow-y: auto"
+                            @scroll="(e: Event) => handleScroll(e, index)">
+                            <pre style="white-space: pre-wrap; font-family: inherit">{{ term.content }}</pre>
+                        </q-card-section>
+                    </q-card>
+                </q-expansion-item>
+            </template>
         </q-list>
     </div>
 </template>

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { checkEmailExists, checkIdNumberExists } from '../../services/auth'
+
 // 用多個 defineModel，跟父層（RegisterPage.vue）逐一綁定欄位
 // 好處：父層用 v-model:name="name" v-model:idNumber="idNumber" 這種寫法，
 //      清楚知道每個欄位對應到哪個變數，不用傳一整包物件進來
@@ -43,11 +45,30 @@ function isValidTaiwanId(id: string): boolean {
   return sum % 10 === 0
 }
 
-const idNumberRule = (val: string) =>
-  isValidTaiwanId(val) || '身分證字號格式錯誤'
+// 身分證字號驗證：先檢查格式（含真檢查碼），格式對了才打 API 確認沒被註冊過
+// async 函式搭配 lazy-rules，只會在欄位失焦時驗證一次，不會每打一個字就打 API
+const idNumberRule = async (val: string) => {
+  if (!isValidTaiwanId(val)) return '身分證字號格式錯誤'
+  try {
+    const res = await checkIdNumberExists(val)
+    return !res.data.data || '此身分證字號已被註冊'
+  } catch {
+    // API 呼叫失敗時（例如網路問題），先不擋住使用者，讓他能繼續填表
+    // 真正的重複檢查在 Step3 送出時後端還是會再擋一次，這裡只是提早告知
+    return true
+  }
+}
 
-const emailRule = (val: string) =>
-  /^[\w.+-]+@[\w-]+\.[a-zA-Z]{2,}$/.test(val) || 'Email 格式錯誤'
+// Email 驗證：邏輯跟身分證字號一樣，先檢查格式再打 API
+const emailRule = async (val: string) => {
+  if (!/^[\w.+-]+@[\w-]+\.[a-zA-Z]{2,}$/.test(val)) return 'Email 格式錯誤'
+  try {
+    const res = await checkEmailExists(val)
+    return !res.data.data || '此 Email 已被註冊'
+  } catch {
+    return true
+  }
+}
 
 const phoneRule = (val: string) =>
   /^09\d{8}$/.test(val) || '手機號碼格式錯誤'

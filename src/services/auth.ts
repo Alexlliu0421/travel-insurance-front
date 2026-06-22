@@ -24,4 +24,16 @@ export function forgotPassword(data: { email: string }) {
 // 重設密碼：帶 token + 新密碼，更新使用者密碼
 export function resetPassword(data: { token: string; newPassword: string }) {
   return http.post<ApiResponse<null>>('/api/auth/reset-password', data)
+
+
+  
+}
+// 檢查 email 是否已被註冊
+export function checkEmailExists(email: string) {
+  return http.get<ApiResponse<boolean>>('/api/auth/check-email', { params: { email } })
+}
+
+// 檢查身分證字號是否已被註冊
+export function checkIdNumberExists(idNumber: string) {
+  return http.get<ApiResponse<boolean>>('/api/auth/check-idnumber', { params: { idNumber } })
 }
