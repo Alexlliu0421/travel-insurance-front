@@ -3,10 +3,11 @@ import { ref, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useLogin } from '../composables/useLogin'
 import { useCaptcha } from '../composables/useCaptcha'
+import { useAuthStore } from '../stores/authStore'
 
 // 用 v-model 控制 Modal 開關，由父層（HomePage.vue）決定何時顯示
 const visible = defineModel<boolean>()
-
+const authStore = useAuthStore()
 const router = useRouter()
 const { idNumber, password, errorMsg, loading, submitLogin } = useLogin()
 const { canvasRef, refresh, verify } = useCaptcha()
@@ -33,6 +34,14 @@ async function onSubmit() {
     const success = await submitLogin()
     if (success) {
         visible.value = false // 登入成功，關閉 Modal
+        const role = authStore.role 
+
+        // 判斷跳轉
+        if (role === 'SALESMAN' || role === 'MANAGER') {
+            router.push('/approval/worklist')
+        } else {
+            router.push('/')
+        }
     } else {
         captchaInput.value = ''
         refresh() // 登入失敗也換一組新的驗證碼，避免一直用同一組猜
