@@ -20,10 +20,10 @@ const occupationOptions = [
 
 // 保額選項：對應資料庫目前啟用中的 coverage_amounts (id 1004~1007)
 const coverageOptions = [
-  { label: '100萬', value: 1004 },
-  { label: '300萬', value: 1005 },
-  { label: '500萬', value: 1006 },
-  { label: '1000萬', value: 1007 },
+  { label: '100萬', value: 1 },
+  { label: '300萬', value: 2 },
+  { label: '500萬', value: 3 },
+  { label: '1000萬', value: 4 },
 ]
 
 // 即時驗證規則，對應後端 QuoteServiceImpl 的限制
@@ -67,24 +67,11 @@ const birthRule = (val: string) => {
         <q-card flat bordered class="q-pa-lg">
           <div class="row q-col-gutter-md">
             <div class="col-6">
-              <q-input
-                v-model="departureDate"
-                type="date"
-                label="出發日"
-                outlined
-                :rules="[departureRule]"
-                lazy-rules
-              />
+              <q-input v-model="departureDate" type="date" label="出發日" outlined :rules="[departureRule]" lazy-rules />
             </div>
             <div class="col-6">
-              <q-input
-                v-model="returnDate"
-                type="date"
-                label="回程日"
-                outlined
-                :rules="[returnRule, daysRule]"
-                lazy-rules
-              />
+              <q-input v-model="returnDate" type="date" label="回程日" outlined :rules="[returnRule, daysRule]"
+                lazy-rules />
             </div>
           </div>
 
@@ -92,15 +79,8 @@ const birthRule = (val: string) => {
             投保天數：{{ insuredDays }} 天
           </div>
 
-          <q-input
-            v-model="insuredBirthDate"
-            type="date"
-            label="被保人生日"
-            outlined
-            class="q-mb-md"
-            :rules="[birthRule]"
-            lazy-rules
-          />
+          <q-input v-model="insuredBirthDate" type="date" label="被保人生日" outlined class="q-mb-md" :rules="[birthRule]"
+            lazy-rules />
 
           <div class="q-mb-md">
             <div class="text-caption q-mb-xs">被保人性別</div>
@@ -108,38 +88,13 @@ const birthRule = (val: string) => {
             <q-radio v-model="insuredGender" :val="0" label="女" />
           </div>
 
-          <q-select
-            v-model="insuredOccupationCode"
-            :options="occupationOptions"
-            option-value="value"
-            option-label="label"
-            emit-value
-            map-options
-            label="被保人職業"
-            outlined
-            class="q-mb-md"
-          />
+          <q-select v-model="insuredOccupationCode" :options="occupationOptions" option-value="value"
+            option-label="label" emit-value map-options label="被保人職業" outlined class="q-mb-md" />
 
-          <q-select
-            v-model="coverageId"
-            :options="coverageOptions"
-            option-value="value"
-            option-label="label"
-            emit-value
-            map-options
-            label="保額方案"
-            outlined
-            class="q-mb-lg"
-          />
+          <q-select v-model="coverageId" :options="coverageOptions" option-value="value" option-label="label" emit-value
+            map-options label="保額方案" outlined class="q-mb-lg" />
 
-          <q-btn
-            color="primary"
-            label="試算保費"
-            class="full-width"
-            size="lg"
-            :loading="loading"
-            @click="submitQuote"
-          />
+          <q-btn color="primary" label="試算保費" class="full-width" size="lg" :loading="loading" @click="submitQuote" />
 
           <div v-if="errorMsg" class="text-negative text-caption q-mt-md">{{ errorMsg }}</div>
 
