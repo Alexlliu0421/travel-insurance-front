@@ -3,10 +3,11 @@ import { ref, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useLogin } from '../composables/useLogin'
 import { useCaptcha } from '../composables/useCaptcha'
+import ForgotPasswordModal from './ForgotPasswordModal.vue'
 
 // 用 v-model 控制 Modal 開關，由父層（HomePage.vue）決定何時顯示
 const visible = defineModel<boolean>()
-
+const showForgotPassword = ref(false)
 const router = useRouter()
 const { idNumber, password, errorMsg, loading, submitLogin } = useLogin()
 const { canvasRef, refresh, verify } = useCaptcha()
@@ -44,9 +45,14 @@ function goToRegister() {
     visible.value = false
     router.push('/register')
 }
+function openForgotPassword() {
+    visible.value = false // 關閉登入 Modal
+    showForgotPassword.value = true // 打開忘記密碼 Modal
+}
 </script>
 
 <template>
+    <ForgotPasswordModal v-model="showForgotPassword" />
     <q-dialog v-model="visible">
         <q-card style="width: 360px">
             <q-card-section class="row items-center justify-between">
@@ -69,7 +75,9 @@ function goToRegister() {
                             @click="showPassword = !showPassword" />
                     </template>
                 </q-input>
-
+                <div class="text-right text-caption q-mb-sm">
+                    <a class="text-primary cursor-pointer" @click="openForgotPassword">忘記密碼？</a>
+                </div>
                 <!-- 假驗證碼區塊 -->
                 <div class="row items-center q-gutter-sm q-mb-sm">
                     <canvas ref="canvasRef" width="120" height="44" style="border-radius: 4px" />
