@@ -36,7 +36,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <q-toolbar class="bg-white text-dark">
+    <q-toolbar class="bg-white text-dark" style="border-bottom: 1px solid #e0e0e0;">
         <!-- Logo / 網站名稱，點擊回首頁 -->
         <q-toolbar-title class="cursor-pointer row items-center" @click="router.push('/')">
             <q-icon name="park" size="28px" class="q-mr-sm" color="green" />
