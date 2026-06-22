@@ -1,9 +1,18 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import axios from 'axios';
-import { useRouter } from 'vue-router'; // 1. 引入 router
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/authStore'
+import axios from 'axios'
+import NavBar from '../components/NavBar.vue'
+import LoginModal from '../components/LoginModal.vue'
 
-const router = useRouter(); // 2. 初始化 router
+const router = useRouter()
+const authStore = useAuthStore() // 2. 初始化 store
+const showLoginModal = ref(false)
+
+function handleOpenLogin() {
+  showLoginModal.value = true
+}
 
 interface WorklistItem {
   policy_id: number;
@@ -15,7 +24,14 @@ interface WorklistItem {
 const worklist = ref<WorklistItem[]>([]);
 
 const fetchWorklist = async () => {
-  const token = localStorage.getItem('token');
+  // 3. 從 Pinia 取得 token
+  const token = authStore.token 
+  
+  if (!token) {
+    console.warn('未登入，無法取得工作列表');
+    return;
+  }
+
   try {
     const res = await axios.get('http://localhost:8080/api/approval/worklist', {
       headers: { 'Authorization': `Bearer ${token}` }
@@ -26,7 +42,6 @@ const fetchWorklist = async () => {
   }
 };
 
-// 3. 定義跳轉函式
 const goToApproval = (id: number) => {
   router.push({ name: 'ApprovalForm', params: { policyId: id } });
 };
@@ -35,10 +50,13 @@ onMounted(fetchWorklist);
 </script>
 
 <template>
+  <NavBar @open-login="handleOpenLogin" />
+  <LoginModal v-model="showLoginModal" />
+  
   <nav style="margin-bottom: 20px;">
-  <router-link to="/approval/worklist" style="margin-right: 15px;">待辦工作清單</router-link>
-  <router-link to="/approval/history">查詢歷程記錄</router-link>
-</nav>
+    <router-link to="/approval/history">查詢歷程記錄</router-link>
+  </nav>
+  
   <div style="padding: 20px;">
     <h2>待審核工作區</h2>
     <table border="1" style="width: 100%; border-collapse: collapse; text-align: left;">
@@ -47,11 +65,12 @@ onMounted(fetchWorklist);
           <th>保單號碼</th>
           <th>狀態</th>
           <th>申請日期</th>
-          <th>操作</th> </tr>
+          <th>操作</th> 
+        </tr>
       </thead>
       <tbody>
         <tr v-if="worklist.length === 0">
-          <td colspan="4" style="text-align: center;">暫無歷程紀錄</td>
+          <td colspan="4" style="text-align: center;">暫無待處理紀錄</td>
         </tr>
         <tr v-for="item in worklist" :key="item.policy_id">
           <td>{{ item.policy_number }}</td>
