@@ -42,8 +42,7 @@ const emit = defineEmits<{
     (e: 'open-login'): void
     (e: 'open-forgot-password'): void
 }>()
-// 已登入使用者想改密碼：直接走「忘記密碼」流程
-// 因為改密碼跟忘記密碼本質上是同一件事（都是想換新密碼，透過 Email 驗證身份再設定新密碼）
+
 // 已登入使用者想改密碼：直接走「忘記密碼」流程
 // 不登出，讓使用者保持登入狀態去完成這個流程
 function handleChangePassword() {
