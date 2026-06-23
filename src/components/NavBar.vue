@@ -32,7 +32,16 @@ function handleLogout() {
 // 由外層（App.vue 或 HomePage.vue）決定何時顯示 Modal
 const emit = defineEmits<{
     (e: 'open-login'): void
+    (e: 'open-forgot-password'): void
 }>()
+// 已登入使用者想改密碼：直接走「忘記密碼」流程
+// 因為改密碼跟忘記密碼本質上是同一件事（都是想換新密碼，透過 Email 驗證身份再設定新密碼）
+// 已登入使用者想改密碼：直接走「忘記密碼」流程
+// 不登出，讓使用者保持登入狀態去完成這個流程
+function handleChangePassword() {
+    emit('open-forgot-password')
+}
+
 </script>
 
 <template>
@@ -65,6 +74,9 @@ const emit = defineEmits<{
                     </q-item>
                     <q-item clickable v-close-popup @click="router.push('/plans')">
                         <q-item-section>我的保單</q-item-section>
+                    </q-item>
+                    <q-item clickable v-close-popup @click="handleChangePassword">
+                        <q-item-section>修改密碼</q-item-section>
                     </q-item>
                     <q-item clickable v-close-popup @click="handleLogout">
                         <q-item-section>登出</q-item-section>
