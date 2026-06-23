@@ -4,6 +4,7 @@ import { quasar, transformAssetUrls } from '@quasar/vite-plugin'
 import { fileURLToPath, URL } from 'node:url' // 1.sam 引入
 
 export default defineConfig({
+  base: '/',
   plugins: [
     vue({
       template: { transformAssetUrls }

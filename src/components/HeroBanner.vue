@@ -17,7 +17,7 @@ const { scrollToSection } = useScrollTo()
       <q-btn outline color="primary" label="了解旅平險" size="lg" @click="scrollToSection('product-intro')" />
     </div>
     <div class="col-12 col-md-6 text-center">
-      <q-icon name="flight" size="200px" color="primary" />
+      <img src="airplane.png" style="width: 250px; height: 250px;" />
     </div>
   </div>
 </template>

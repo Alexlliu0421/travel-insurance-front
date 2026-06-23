@@ -5,6 +5,8 @@ import approvalRoutes from './modules/approval'
 import ResetPasswordPage from '../pages/ResetPasswordPage.vue'
 import { Notify } from 'quasar'
 import { useAuthStore } from '../stores/authStore.ts' // 假設你的 store 在這裡
+import clientRoutes from './modules/client'
+
 const router = createRouter({
   history: createWebHistory(),
   routes: [
@@ -12,6 +14,7 @@ const router = createRouter({
     { path: '/register', name: 'register', component: RegisterPage },
     { path: '/reset-password', name: 'reset-password', component: ResetPasswordPage },
     approvalRoutes,
+    clientRoutes
   ],
 })
 
