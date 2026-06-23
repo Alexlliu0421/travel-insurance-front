@@ -8,17 +8,26 @@ const router = useRouter()
 const authStore = useAuthStore()
 const { scrollToSection } = useScrollTo()
 
-// 是否已登入，決定 Navbar 右側顯示「登入/註冊」還是「使用者選單」
+// --- 權限與狀態計算 ---
 const isLoggedIn = computed(() => authStore.isLoggedIn)
+const userRole = computed(() => authStore.role || '')
 
-// 點擊「我要投保」：
-// - 已登入 → 之後導向 Bolin 的投保頁面（路由尚未建立，先留 TODO）
-// - 未登入 → 發出事件，讓父層打開登入 Modal
+// 判斷是否為內部員工（業務員或主管）
+const isStaff = computed(() => ['SALESMAN', 'MANAGER'].includes(userRole.value))
+
+// --- 事件處理 ---
+
+// 點擊「我要投保」或「保單查詢」按鈕的邏輯
 function handleApplyClick() {
-    if (isLoggedIn.value) {
-        // 等 投保頁面路由確定後補上
-    } else {
+    if (!isLoggedIn.value) {
+        // 未登入則打開登入 Modal
         emit('open-login')
+    } else if (isStaff.value) {
+        // 業務員/主管導向歷程查詢頁
+        router.push('/approval/history')
+    } else {
+        // 一般使用者導向投保頁 (請替換為實際路由)
+        router.push('/insurance/apply')
     }
 }
 
@@ -28,8 +37,7 @@ function handleLogout() {
     router.push('/')
 }
 
-// NavBar 本身不負責顯示登入 Modal，只發出事件，
-// 由外層（App.vue 或 HomePage.vue）決定何時顯示 Modal
+// 定義向外傳遞的事件
 const emit = defineEmits<{
     (e: 'open-login'): void
     (e: 'open-forgot-password'): void
@@ -46,22 +54,23 @@ function handleChangePassword() {
 
 <template>
     <q-toolbar class="bg-white text-dark" style="border-bottom: 1px solid #e0e0e0;">
-        <!-- Logo / 網站名稱，點擊回首頁 -->
         <q-toolbar-title class="cursor-pointer row items-center" @click="router.push('/')">
             <q-icon name="park" size="28px" class="q-mr-sm" color="green" />
             大樹人壽
         </q-toolbar-title>
 
-        <!-- 錨點導航：只在首頁有效，滾動到對應區塊 -->
         <q-btn flat label="商品特色" @click="scrollToSection('product-intro')" />
         <q-btn flat label="一鍵速算" @click="scrollToSection('quote-section')" />
         <q-btn flat label="常見問題" @click="scrollToSection('faq-section')" />
-        <q-btn flat label="我要投保" @click="handleApplyClick" />
+        
+        <q-btn 
+            flat 
+            :label="isStaff ? '保單歷程查詢' : '我要投保'" 
+            @click="handleApplyClick" 
+        />
 
-        <!-- 未登入：只有一個登入按鈕（圖示 + 文字） -->
         <q-btn v-if="!isLoggedIn" flat icon="person" label="登入" @click="emit('open-login')" />
 
-        <!-- 已登入：顯示使用者下拉選單 -->
         <template v-else>
             <q-btn-dropdown flat>
                 <template #label>
