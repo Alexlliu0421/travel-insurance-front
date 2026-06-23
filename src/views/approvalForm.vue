@@ -1,94 +1,151 @@
-<template>
-  <div class="form-container" style="padding: 20px;">
-    <button @click="goBack" style="margin-bottom: 20px;">&lt; 返回工作清單</button>
-    
-    <h2>保單簽核 - {{ policyDetail.policy_number || '載入中...' }}</h2>
-
-    <table border="1" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-      <tr style="background-color: #f8f8f8;">
-        <th colspan="4" style="text-align: left; padding: 10px;">被保險人資訊</th>
-      </tr>
-      <tr>
-        <td style="padding: 8px; width: 20%;">姓名: {{ policyDetail.insured_name }}</td>
-        <td style="padding: 8px; width: 20%;">身分證: {{ policyDetail.insured_id_number }}</td>
-        <td style="padding: 8px; width: 20%;">生日: {{ policyDetail.insured_birth_date }}</td>
-        <td style="padding: 8px; width: 20%;">性別: {{ policyDetail.insured_gender === 1 ? '男' : '女' }}</td>
-      </tr>
-      <tr style="background-color: #f8f8f8;">
-        <th colspan="4" style="text-align: left; padding: 10px;">保單細節</th>
-      </tr>
-      <tr>
-        <td colspan="2">出發日: {{ policyDetail.departure_date }} ~ 結束日: {{ policyDetail.return_date }}</td>
-        <td colspan="2">投保天數: {{ policyDetail.insured_days }} 天</td>
-      </tr>
-      <tr>
-        <td colspan="2">基本保費: {{ policyDetail.base_premium }}</td>
-        <td colspan="2">實收保費: <strong>{{ policyDetail.final_premium }}</strong></td>
-      </tr>
-    </table>
-
-    <div>目前狀態: <strong>{{ policyDetail.status }}</strong></div>
-    
-    <textarea v-model="remark" placeholder="請輸入備註" style="width: 100%; height: 80px; margin: 10px 0;"></textarea>
-    
-    <div style="margin-top: 15px;">
-      <template v-if="userRole === 'MANAGER'">
-        <button @click="submitAction('APPROVE')" style="margin-right: 10px;">核准</button>
-        <button @click="submitAction('REJECT')" style="background-color: #ffcccc;">駁回</button>
-      </template>
-      <template v-else-if="userRole === 'SALESMAN'">
-        <button @click="submitAction('SUBMIT')">送審</button>
-      </template>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import axios from 'axios';
+import { useAuthStore } from '../stores/authStore';
+import NavBar from '../components/NavBar.vue';
+import LoginModal from '../components/LoginModal.vue';
+import { useApproval } from '../composables/useApproval';
+import { statusMap, actionMap, getStatusColor } from '../constants/approvalMap';
 
 const route = useRoute();
 const router = useRouter();
-const policyId = route.params.policyId;
+const authStore = useAuthStore();
+const { fetchPolicyDetail, submitAction } = useApproval();
 
-// 狀態變數
+// 正確處理 router.params.policyId 的型別 (轉換為 string | number)
+const rawPolicyId = route.params.policyId;
+const policyId = Array.isArray(rawPolicyId) ? rawPolicyId[0] : (rawPolicyId as string);
+
 const policyDetail = ref<any>({});
 const remark = ref('');
-const userRole = ref(localStorage.getItem('role')); // 直接讀取 F12 裡的 role
+const errorMessage = ref('');
+const showLoginModal = ref(false);
+const showConfirmDialog = ref(false);
+const pendingAction = ref('');
+const confirmMessage = ref('');
 
-const goBack = () => {
-  router.push('/approval/worklist'); 
+const handleOpenLogin = () => { showLoginModal.value = true; };
+const goBack = () => router.push('/approval/worklist');
+
+const confirmSubmit = (action: string) => {
+  pendingAction.value = action;
+  const label = actionMap[action] || action;
+  confirmMessage.value = `確定要執行「${label}」此保單嗎？`;
+  showConfirmDialog.value = true;
 };
-// 載入資料
-onMounted(async () => {
-  const token = localStorage.getItem('token');
-  try {
-    // 呼叫單筆查詢 API (請確保後端已補上 /policies/{policyId})
-    const res = await axios.get(`http://localhost:8080/api/approval/policies/${policyId}`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    policyDetail.value = res.data;
-  } catch (err) {
-    console.error('資料載入失敗', err);
-    alert('無法取得保單資料');
-  }
-});
 
-// 提交動作
-const submitAction = async (action: string) => {
-  const token = localStorage.getItem('token');
+const executeSubmit = async () => {
+  if (!policyId) return;
   try {
-    await axios.post('http://localhost:8080/api/approval/submit', {
+    await submitAction({
       policyId: policyId,
-      action: action,
+      action: pendingAction.value,
       remark: remark.value
-    }, { headers: { 'Authorization': `Bearer ${token}` } });
-    
-    alert('操作成功！');
+    });
     router.push('/approval/worklist');
   } catch (err: any) {
-    alert('操作失敗: ' + (err.response?.data?.message || '權限不足或系統錯誤'));
+    errorMessage.value = '操作失敗: ' + (err.response?.data?.message || '系統錯誤');
   }
 };
+
+onMounted(async () => {
+  if (!policyId) {
+    errorMessage.value = '參數錯誤：找不到保單編號';
+    return;
+  }
+  try {
+    policyDetail.value = await fetchPolicyDetail(policyId);
+  } catch (err) {
+    errorMessage.value = '無法取得保單資料';
+  }
+});
 </script>
+<template>
+  <q-layout view="lHh Lpr lFf">
+    <q-header elevated>
+      <NavBar @open-login="handleOpenLogin" />
+    </q-header>
+
+    <q-page-container>
+      <q-page padding>
+        <div class="q-pa-md" style="max-width: 800px; margin: 0 auto;">
+          <q-btn flat icon="arrow_back" label="返回工作清單" @click="goBack" class="q-mb-md" />
+
+          <q-banner v-if="errorMessage" inline-actions rounded class="bg-red text-white q-mb-md">
+            {{ errorMessage }}
+            <template v-slot:action>
+              <q-btn flat label="關閉" @click="errorMessage = ''" />
+            </template>
+          </q-banner>
+
+          <q-card flat bordered>
+            <q-card-section class="bg-primary text-white">
+              <div class="text-h6">保單簽核 - {{ policyDetail.policy_number || '載入中...' }}</div>
+            </q-card-section>
+
+            <q-card-section>
+              <div class="text-subtitle1 text-weight-bold q-mb-sm">被保險人資訊</div>
+              <div class="row q-col-gutter-md q-mb-lg">
+                <div class="col-6 col-sm-3">姓名: {{ policyDetail.insured_name }}</div>
+                <div class="col-6 col-sm-3">身分證: {{ policyDetail.insured_id_number }}</div>
+                <div class="col-6 col-sm-3">生日: {{ policyDetail.insured_birth_date }}</div>
+                <div class="col-6 col-sm-3">性別: {{ policyDetail.insured_gender === 1 ? '男' : '女' }}</div>
+              </div>
+
+              <div class="text-subtitle1 text-weight-bold q-mb-sm">保單細節</div>
+              <q-list bordered separator>
+                <q-item>
+                  <q-item-section>
+                    <q-item-label caption>保險期間</q-item-label>
+                    <q-item-label>{{ policyDetail.departure_date }} ~ {{ policyDetail.return_date }} ({{ policyDetail.insured_days }} 天)</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-item>
+                  <q-item-section>
+                    <q-item-label caption>保費資訊</q-item-label>
+                    <q-item-label>基本: {{ policyDetail.base_premium }} / 實收: <strong class="text-primary">{{ policyDetail.final_premium }}</strong></q-item-label>
+                  </q-item-section>
+                </q-item>
+              </q-list>
+
+              <div class="q-mt-lg">
+                <div class="q-mb-sm">
+                  目前狀態: 
+                  <q-badge :color="getStatusColor(policyDetail.status)">
+                    {{ statusMap[policyDetail.status] || policyDetail.status }}
+                  </q-badge>
+                </div>
+                <q-input v-model="remark" outlined type="textarea" label="簽核備註" rows="3" />
+              </div>
+            </q-card-section>
+
+            <q-card-actions align="right" class="q-pa-md">
+              <template v-if="authStore.role === 'MANAGER'">
+                <q-btn color="positive" label="核准" @click="confirmSubmit('APPROVE')" class="q-mr-sm" />
+                <q-btn color="negative" label="駁回" @click="confirmSubmit('REJECT')" />
+              </template>
+              <template v-else-if="authStore.role === 'SALESMAN'">
+                <q-btn color="primary" label="送審" @click="confirmSubmit('SUBMIT')" />
+              </template>
+            </q-card-actions>
+          </q-card>
+        </div>
+      </q-page>
+    </q-page-container>
+
+    <q-dialog v-model="showConfirmDialog" persistent>
+      <q-card>
+        <q-card-section class="row items-center">
+          <q-avatar icon="warning" color="warning" text-color="white" />
+          <span class="q-ml-sm">{{ confirmMessage }}</span>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="取消" color="grey" v-close-popup />
+          <q-btn flat label="確認執行" color="primary" @click="executeSubmit" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <LoginModal v-model="showLoginModal" />
+  </q-layout>
+</template>
