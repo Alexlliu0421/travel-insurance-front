@@ -7,7 +7,7 @@ import LoginModal from '../components/LoginModal.vue'
 
 // 匯入共用設定與組合式函式
 import { useApproval } from '../composables/useApproval'
-import { statusMap, getStatusColor } from '../constants/ApprovalMap'
+import { statusMap, getStatusColor } from '../constants/approvalMap'
 import type { WorklistItem } from '../types/approval';
 
 const router = useRouter()

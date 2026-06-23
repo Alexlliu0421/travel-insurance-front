@@ -5,7 +5,7 @@ import { useAuthStore } from '../stores/authStore';
 import NavBar from '../components/NavBar.vue';
 import LoginModal from '../components/LoginModal.vue';
 import { useApproval } from '../composables/useApproval';
-import { statusMap, actionMap, getStatusColor } from '../constants/ApprovalMap';
+import { statusMap, actionMap, getStatusColor } from '../constants/approvalMap';
 
 const route = useRoute();
 const router = useRouter();

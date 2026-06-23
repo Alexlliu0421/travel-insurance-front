@@ -6,7 +6,7 @@ import type { QTableColumn } from 'quasar';
 import NavBar from '../components/NavBar.vue';
 import LoginModal from '../components/LoginModal.vue';
 import type { Policy, HistoryLog } from '../types/approval';
-import { statusMap, actionMap, getStatusColor } from '../constants/ApprovalMap';
+import { statusMap, actionMap, getStatusColor } from '../constants/approvalMap';
 import { useApproval } from '../composables/useApproval'; 
 
 const router = useRouter();
