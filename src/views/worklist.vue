@@ -1,42 +1,37 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/authStore'
-import axios from 'axios'
+import type { QTableColumn } from 'quasar'
 import NavBar from '../components/NavBar.vue'
 import LoginModal from '../components/LoginModal.vue'
 
+// 匯入共用設定與組合式函式
+import { useApproval } from '../composables/useApproval'
+import { statusMap, getStatusColor } from '../constants/ApprovalMap'
+import type { WorklistItem } from '../types/approval';
+
 const router = useRouter()
-const authStore = useAuthStore() // 2. 初始化 store
+const { fetchWorklist } = useApproval() // 使用 API Hook
 const showLoginModal = ref(false)
+const worklist = ref<WorklistItem[]>([]);
+const formatDate = (isoString: string) => isoString?.replace('T', ' ').split('.')[0] || '';
+
+// 表格欄位定義
+const columns: QTableColumn[] = [
+  { name: 'policy_number', label: '保單號碼', field: 'policy_number', align: 'left' },
+  { name: 'status', label: '狀態', field: 'status', align: 'left' },
+  { name: 'created_date', label: '申請日期', field: 'created_date', align: 'left',
+    format: (val: any) => formatDate(val)},
+  { name: 'actions', label: '操作', field: 'policy_id', align: 'center' }
+];
 
 function handleOpenLogin() {
   showLoginModal.value = true
 }
 
-interface WorklistItem {
-  policy_id: number;
-  policy_number: string;
-  status: string;
-  created_date: string;
-}
-
-const worklist = ref<WorklistItem[]>([]);
-
-const fetchWorklist = async () => {
-  // 3. 從 Pinia 取得 token
-  const token = authStore.token 
-  
-  if (!token) {
-    console.warn('未登入，無法取得工作列表');
-    return;
-  }
-
+const loadWorklist = async () => {
   try {
-    const res = await axios.get('http://localhost:8080/api/approval/worklist', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    worklist.value = res.data;
+    worklist.value = await fetchWorklist();
   } catch (err) {
     console.error('抓取資料失敗', err);
   }
@@ -46,41 +41,50 @@ const goToApproval = (id: number) => {
   router.push({ name: 'ApprovalForm', params: { policyId: id } });
 };
 
-onMounted(fetchWorklist);
+onMounted(loadWorklist);
 </script>
-
 <template>
-  <NavBar @open-login="handleOpenLogin" />
-  <LoginModal v-model="showLoginModal" />
-  
-  <nav style="margin-bottom: 20px;">
-    <router-link to="/approval/history">查詢歷程記錄</router-link>
-  </nav>
-  
-  <div style="padding: 20px;">
-    <h2>待審核工作區</h2>
-    <table border="1" style="width: 100%; border-collapse: collapse; text-align: left;">
-      <thead>
-        <tr>
-          <th>保單號碼</th>
-          <th>狀態</th>
-          <th>申請日期</th>
-          <th>操作</th> 
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-if="worklist.length === 0">
-          <td colspan="4" style="text-align: center;">暫無待處理紀錄</td>
-        </tr>
-        <tr v-for="item in worklist" :key="item.policy_id">
-          <td>{{ item.policy_number }}</td>
-          <td>{{ item.status }}</td>
-          <td>{{ item.created_date }}</td>
-          <td>
-            <button @click="goToApproval(item.policy_id)">詳細簽核</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <q-layout view="lHh Lpr lFf">
+    <q-header elevated>
+      <NavBar @open-login="handleOpenLogin" />
+    </q-header>
+    <LoginModal v-model="showLoginModal" />
+    <q-page-container>
+      <q-page padding>
+        <div class="q-pa-md">
+          <div class="row items-center q-mb-md">
+            <h4 class="q-my-none">待審核工作區</h4>
+            <q-space />
+          </div>
+
+          <q-table
+            :rows="worklist"
+            :columns="columns"
+            row-key="policy_id"
+            flat
+            bordered
+          >
+            <template v-slot:body-cell-status="props">
+              <q-td :props="props">
+                <q-badge :color="getStatusColor(props.row.status)">
+                  {{ statusMap[props.row.status] || props.row.status }}
+                </q-badge>
+              </q-td>
+            </template>
+
+            <template v-slot:body-cell-actions="props">
+              <q-td :props="props" class="text-center">
+                <q-btn 
+                  color="primary" 
+                  label="詳細簽核" 
+                  size="sm" 
+                  @click="goToApproval(props.row.policy_id)" 
+                />
+              </q-td>
+            </template>
+          </q-table>
+        </div>
+      </q-page>
+    </q-page-container>
+  </q-layout>
 </template>
