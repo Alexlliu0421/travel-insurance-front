@@ -48,25 +48,20 @@ const emit = defineEmits<{
 function handleChangePassword() {
     emit('open-forgot-password')
 }
-
 </script>
 
 <template>
     <q-toolbar class="bg-white text-dark" style="border-bottom: 1px solid #e0e0e0;">
         <q-toolbar-title class="cursor-pointer row items-center" @click="router.push('/')">
-            <q-icon name="park" size="28px" class="q-mr-sm" color="green" />
-            大樹人壽
+            <q-icon name="flight" size="22px" color="primary" class="q-mr-sm" />
+            <span class="text-weight-bold" style="font-size: 19px; color: #374151; letter-spacing: 0.5px;">XX旅平險</span>
         </q-toolbar-title>
 
         <q-btn flat label="商品特色" @click="scrollToSection('product-intro')" />
         <q-btn flat label="一鍵速算" @click="scrollToSection('quote-section')" />
         <q-btn flat label="常見問題" @click="scrollToSection('faq-section')" />
-        
-        <q-btn 
-            flat 
-            :label="isStaff ? '保單歷程查詢' : '我要投保'" 
-            @click="handleApplyClick" 
-        />
+
+        <q-btn flat :label="isStaff ? '保單歷程查詢' : '我要投保'" @click="handleApplyClick" />
 
         <q-btn v-if="!isLoggedIn" flat icon="person" label="登入" @click="emit('open-login')" />
 

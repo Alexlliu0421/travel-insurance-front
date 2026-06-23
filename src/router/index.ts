@@ -14,7 +14,7 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to) => {
   const publicPages = ['/', '/register', '/reset-password']
   const hasToken = !!localStorage.getItem('token')
 
@@ -24,10 +24,9 @@ router.beforeEach((to, from, next) => {
       message: '請先登入才能使用此功能',
       position: 'top',
     })
-    next('/')
-  } else {
-    next()
+    return '/' // 新寫法：直接 return 要導向的路徑，取代呼叫 next('/')
   }
+  // 沒有 return 任何東西，等同於放行，取代呼叫 next()
 })
 
 export default router
