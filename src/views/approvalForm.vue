@@ -11,8 +11,8 @@ const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const { fetchPolicyDetail, submitAction } = useApproval();
-
-// 正確處理 router.params.policyId 的型別 (轉換為 string | number)
+const formatDate = (isoString: string) => isoString?.replace('T', ' ').split('.')[0] || '';
+// 正確處理 router.params.policyId 的型別
 const rawPolicyId = route.params.policyId;
 const policyId = Array.isArray(rawPolicyId) ? rawPolicyId[0] : (rawPolicyId as string);
 
@@ -60,6 +60,7 @@ onMounted(async () => {
   }
 });
 </script>
+
 <template>
   <q-layout view="lHh Lpr lFf">
     <q-header elevated>
@@ -90,6 +91,7 @@ onMounted(async () => {
                 <div class="col-6 col-sm-3">身分證: {{ policyDetail.insured_id_number }}</div>
                 <div class="col-6 col-sm-3">生日: {{ policyDetail.insured_birth_date }}</div>
                 <div class="col-6 col-sm-3">性別: {{ policyDetail.insured_gender === 1 ? '男' : '女' }}</div>
+                <div class="col-6 col-sm-3">申請人: {{ policyDetail.applicant_name || '無' }}</div>
               </div>
 
               <div class="text-subtitle1 text-weight-bold q-mb-sm">保單細節</div>
@@ -98,6 +100,15 @@ onMounted(async () => {
                   <q-item-section>
                     <q-item-label caption>保險期間</q-item-label>
                     <q-item-label>{{ policyDetail.departure_date }} ~ {{ policyDetail.return_date }} ({{ policyDetail.insured_days }} 天)</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-item>
+                  <q-item-section>
+                    <q-item-label caption>相關人員</q-item-label>
+                    <q-item-label>
+                      業務員: {{ policyDetail.agent_name || '無' }} / 
+                      最後審核者: {{ policyDetail.reviewer_name || '無' }}
+                    </q-item-label>
                   </q-item-section>
                 </q-item>
                 <q-item>
@@ -114,6 +125,7 @@ onMounted(async () => {
                   <q-badge :color="getStatusColor(policyDetail.status)">
                     {{ statusMap[policyDetail.status] || policyDetail.status }}
                   </q-badge>
+                  <span class="q-ml-sm text-caption text-grey">最後異動: {{ formatDate(policyDetail.last_reviewed_date) || '無' }}</span>
                 </div>
                 <q-input v-model="remark" outlined type="textarea" label="簽核備註" rows="3" />
               </div>
