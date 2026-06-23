@@ -12,7 +12,7 @@ const faqList: FaqItem[] = [
     { q: '沒有收到驗證信怎麼辦？', a: '請確認信箱地址填寫正確，並檢查垃圾信件匣。驗證連結有效期限為 24 小時，逾期請重新註冊。' },
     { q: '驗證連結過期了怎麼辦？', a: '驗證連結逾期 24 小時後會失效，請重新填寫註冊表單，系統會寄出新的驗證信。' },
     { q: '登入帳號是用 Email 還是身分證字號？', a: '登入帳號為身分證字號，密碼為您註冊時設定的密碼。' },
-    { q: '忘記密碼怎麼辦？', a: '目前尚未提供忘記密碼自助重設功能，請聯繫客服協助處理。' },
+    { q: '忘記密碼怎麼辦？', a: '可在登入視窗點擊「忘記密碼」，輸入註冊時填寫的 Email，系統會寄送一封重設密碼信，點擊信中連結即可設定新密碼。' },
     { q: '可以修改註冊時填寫的資料嗎？', a: '登入後可至個人資料頁面修改姓名、電話、地址、國籍與職業類別等資訊。' },
     { q: '身分證字號填寫錯誤格式會怎樣？', a: '系統會即時檢查身分證字號格式是否正確（包含檢查碼驗證），格式錯誤無法送出註冊。' },
 
@@ -52,7 +52,7 @@ const faqList: FaqItem[] = [
     { q: '系統的保障範圍包含哪些？', a: '本保單提供意外身故/失能保障與海外突發疾病醫療保障，依約定保額給付保險金。' },
 ]
 
-const searchKeyword = ref('')
+const searchKeyword = ref('') // 搜尋關鍵字 v-model綁定
 const expandedAll = ref(false)
 const openStates = ref<boolean[]>(faqList.map(() => false))
 function openLink(url: string) {
@@ -60,12 +60,23 @@ function openLink(url: string) {
 }
 const filteredFaq = computed(() =>
     faqList
+        // 先把陣列裡每一題原本的 index（在 faqList 裡的位置）記錄下來，
+        // 因為篩選後位置會變動，但畫面上每一題要展開/收起，要靠原始 index 對應 openStates 陣列
         .map((item, index) => ({ ...item, index }))
+        // 再過濾：只留下「題目」或「答案」裡，包含使用者輸入的關鍵字的那幾題
+        // .includes() 是字串方法，檢查 searchKeyword 有沒有出現在這段文字裡
+        // 如果 searchKeyword 是空字串，每一題都會符合（等於沒有篩選，顯示全部）
         .filter((item) => item.q.includes(searchKeyword.value) || item.a.includes(searchKeyword.value))
 )
 
 function toggleAll() {
+    // 把 expandedAll 的布林值反轉：true 變 false，false 變 true
+    // 這個變數同時也是按鈕顯示文字的依據（true 顯示「收起全部」，false 顯示「展開全部」）
     expandedAll.value = !expandedAll.value
+
+    // 把 openStates 這個陣列裡的每一個值，都改成 expandedAll 的最新狀態
+    // .map(() => expandedAll.value) 不管原本每一題是展開還是收起，
+    // 一律覆蓋成同一個值（全部變 true 或全部變 false）
     openStates.value = openStates.value.map(() => expandedAll.value)
 }
 </script>
@@ -105,8 +116,20 @@ function toggleAll() {
         <div class="row justify-center">
             <div class="col-12 col-md-6">
                 <q-list bordered>
+                    <!-- q-expansion-item：Quasar 框架內建的「可展開折疊面板」元件 -->
+                    <!-- 展開/收起的功能本身是元件原生提供的：點擊標題會自動滑開/收起內容區塊，動畫跟互動邏輯都內建好了，我們完全沒有自己寫 -->
+                    <!-- 我們唯一做的事，是透過 v-model 去讀取/操控它目前展開還是收起的狀態 -->
+
+                    <!-- v-for：根據篩選後的結果（filteredFaq）逐一渲染，搜尋框打字時這裡會跟著變動 -->
+                    <!-- :key：用原始 index（不是篩選後的順序），避免列表重新排序時元件被誤判重複渲染 -->
+                    <!-- v-model：雙向綁定這一題的展開狀態，對應 openStates 陣列裡同一個 index 的值 -->
+                    <!--          使用者點標題 → 元件自動把 openStates[item.index] 切換成 true/false -->
+                    <!--          我們用程式碼改 openStates[item.index]（例如展開全部按鈕）→ 元件自動跟著展開/收起 -->
                     <q-expansion-item v-for="item in filteredFaq" :key="item.index" v-model="openStates[item.index]"
                         header-class="text-weight-medium">
+
+                        <!-- #header：自訂這一題標題列的排版，取代預設純文字 label -->
+                        <!--          目的是把「Q1.」編號跟題目文字分開上色顯示 -->
                         <template #header>
                             <q-item-section>
                                 <span class="text-primary text-weight-bold">Q{{ item.index + 1 }}.</span>

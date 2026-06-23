@@ -9,18 +9,23 @@ const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 function randomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min
 }
-
+// Java 常見寫法（像 min + (int)(Math.random() * (max - min + 1))）是完全一樣的數學公式，
+// 只是 JS 用 Math.floor() 取代 Java 的 (int) 強制轉型來去掉小數。
 export function useCaptcha() {
   const canvasRef = ref<HTMLCanvasElement | null>(null)
   const captchaText = ref('')
 
   // 產生隨機文字（預設 4 個字）
   function generateText(length = 4) {
-    let text = ''
-    for (let i = 0; i < length; i++) {
+    let text = ''                          // 準備一個空字串，之後逐字疊加
+    for (let i = 0; i < length; i++) {     // 重複跑 4 次（length 預設是 4）
       text += CHARS[randomInt(0, CHARS.length - 1)]
+      // CHARS.length - 1 是這串字的最後一個索引位置
+      // randomInt(0, CHARS.length-1) 隨機抽一個索引號碼
+      // CHARS[隨機索引] 就是從 CHARS 這串字裡，隨機挑出「一個字元」
+      // 用 += 把這個字元接到 text 後面
     }
-    return text
+    return text                            // 跑完 4 次迴圈，text 就會是 4 個隨機字元組成的字串
   }
 
   // 在 Canvas 上畫出扭曲文字 + 干擾線/雜訊點

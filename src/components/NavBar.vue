@@ -40,25 +40,28 @@ function handleLogout() {
 // 定義向外傳遞的事件
 const emit = defineEmits<{
     (e: 'open-login'): void
+    (e: 'open-forgot-password'): void
 }>()
+
+// 已登入使用者想改密碼：直接走「忘記密碼」流程
+// 不登出，讓使用者保持登入狀態去完成這個流程
+function handleChangePassword() {
+    emit('open-forgot-password')
+}
 </script>
 
 <template>
     <q-toolbar class="bg-white text-dark" style="border-bottom: 1px solid #e0e0e0;">
         <q-toolbar-title class="cursor-pointer row items-center" @click="router.push('/')">
-            <q-icon name="park" size="28px" class="q-mr-sm" color="green" />
-            大樹人壽
+            <q-icon name="flight" size="22px" color="primary" class="q-mr-sm" />
+            <span class="text-weight-bold" style="font-size: 19px; color: #374151; letter-spacing: 0.5px;">XX旅平險</span>
         </q-toolbar-title>
 
         <q-btn flat label="商品特色" @click="scrollToSection('product-intro')" />
         <q-btn flat label="一鍵速算" @click="scrollToSection('quote-section')" />
         <q-btn flat label="常見問題" @click="scrollToSection('faq-section')" />
-        
-        <q-btn 
-            flat 
-            :label="isStaff ? '保單歷程查詢' : '我要投保'" 
-            @click="handleApplyClick" 
-        />
+
+        <q-btn flat :label="isStaff ? '保單歷程查詢' : '我要投保'" @click="handleApplyClick" />
 
         <q-btn v-if="!isLoggedIn" flat icon="person" label="登入" @click="emit('open-login')" />
 
@@ -74,6 +77,9 @@ const emit = defineEmits<{
                     </q-item>
                     <q-item clickable v-close-popup @click="router.push('/plans')">
                         <q-item-section>我的保單</q-item-section>
+                    </q-item>
+                    <q-item clickable v-close-popup @click="handleChangePassword">
+                        <q-item-section>修改密碼</q-item-section>
                     </q-item>
                     <q-item clickable v-close-popup @click="handleLogout">
                         <q-item-section>登出</q-item-section>

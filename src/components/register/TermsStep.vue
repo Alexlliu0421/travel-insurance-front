@@ -115,6 +115,14 @@ function checkAllAgreed() {
                     </template>
 
                     <q-card>
+                        <!-- max-height: 150px：限制這個區塊的高度，內容超過 150px 就會被截斷，看不到全部 -->
+                        <!-- overflow-y: auto：當內容超過這個高度時，自動出現垂直卷軸，可以上下滑動 -->
+                        <!--                     兩個搭配在一起，才會做出「卡片裡有自己獨立卷軸」的效果 -->
+
+                        <!-- @scroll：綁定瀏覽器原生的 scroll 事件 -->
+                        <!--          只要這個區塊被滑動（滑鼠滾輪、拖卷軸、觸控滑動都算），就會自動觸發，呼叫 handleScroll -->
+                        <!--          e：事件物件本身（包含被滑動的那個 DOM 元素資訊） -->
+                        <!--          index：這是第幾條條款，傳進去讓 handleScroll 知道要更新陣列裡的哪一項 -->
                         <q-card-section style="max-height: 150px; overflow-y: auto"
                             @scroll="(e: Event) => handleScroll(e, index)">
                             <pre style="white-space: pre-wrap; font-family: inherit">{{ term.content }}</pre>

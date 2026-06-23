@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useResetPassword } from '../composables/useResetPassword'
 
-const { newPassword, confirmPassword, loading, errorMsg, success, submitResetPassword } = useResetPassword()
+const { newPassword, confirmPassword, loading, errorMsg, success, submitResetPassword, hasMinLength, hasLetter, hasNumber } = useResetPassword()
 
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
@@ -16,47 +16,41 @@ const showConfirmPassword = ref(false)
 
         <!-- 還沒成功：顯示輸入表單 -->
         <template v-if="!success">
-          <q-input
-            v-model="newPassword"
-            label="新密碼"
-            :type="showPassword ? 'text' : 'password'"
-            outlined
-            class="q-mb-sm"
-          >
+          <q-input v-model="newPassword" label="新密碼" :type="showPassword ? 'text' : 'password'" outlined
+            class="q-mb-sm">
             <template #append>
-              <q-icon
-                :name="showPassword ? 'visibility' : 'visibility_off'"
-                class="cursor-pointer"
-                @click="showPassword = !showPassword"
-              />
+              <q-icon :name="showPassword ? 'visibility' : 'visibility_off'" class="cursor-pointer"
+                @click="showPassword = !showPassword" />
             </template>
           </q-input>
 
-          <q-input
-            v-model="confirmPassword"
-            label="確認新密碼"
-            :type="showConfirmPassword ? 'text' : 'password'"
-            outlined
-            class="q-mb-md"
-          >
+          <!-- 密碼強度檢查清單：跟註冊頁同一套風格 -->
+          <div class="q-mb-md text-caption">
+            <div :class="hasMinLength ? 'text-positive' : 'text-grey'">
+              <q-icon :name="hasMinLength ? 'check_circle' : 'radio_button_unchecked'" size="16px" />
+              至少 8 個字元
+            </div>
+            <div :class="hasLetter ? 'text-positive' : 'text-grey'">
+              <q-icon :name="hasLetter ? 'check_circle' : 'radio_button_unchecked'" size="16px" />
+              包含英文字母
+            </div>
+            <div :class="hasNumber ? 'text-positive' : 'text-grey'">
+              <q-icon :name="hasNumber ? 'check_circle' : 'radio_button_unchecked'" size="16px" />
+              包含數字
+            </div>
+          </div>
+
+          <q-input v-model="confirmPassword" label="確認新密碼" :type="showConfirmPassword ? 'text' : 'password'" outlined
+            class="q-mb-md">
             <template #append>
-              <q-icon
-                :name="showConfirmPassword ? 'visibility' : 'visibility_off'"
-                class="cursor-pointer"
-                @click="showConfirmPassword = !showConfirmPassword"
-              />
+              <q-icon :name="showConfirmPassword ? 'visibility' : 'visibility_off'" class="cursor-pointer"
+                @click="showConfirmPassword = !showConfirmPassword" />
             </template>
           </q-input>
 
           <div v-if="errorMsg" class="text-negative text-caption q-mb-sm">{{ errorMsg }}</div>
 
-          <q-btn
-            color="primary"
-            label="確認重設密碼"
-            class="full-width"
-            :loading="loading"
-            @click="submitResetPassword"
-          />
+          <q-btn color="primary" label="確認重設密碼" class="full-width" :loading="loading" @click="submitResetPassword" />
         </template>
 
         <!-- 成功：顯示提示，並自動導回首頁 -->

@@ -33,9 +33,9 @@ export function useRegister() {
 
     // 密碼是否符合強度規則（跟 PasswordStep.vue 的檢查清單邏輯一致）
     const isPasswordValid = computed(() =>
-        password.value.length >= 8 &&
-        /[a-zA-Z]/.test(password.value) &&
-        /\d/.test(password.value)
+        password.value.length >= 8 && // 最少 8 個字
+        /[a-zA-Z]/.test(password.value) &&  // 有字母
+        /\d/.test(password.value)   //正規表達式檢查字串裡有沒有任何一個數字
     )
 
     // 密碼跟確認密碼是否一致
