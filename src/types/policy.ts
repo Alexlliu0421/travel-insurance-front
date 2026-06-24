@@ -49,4 +49,4 @@ export interface PolicyDetail {
   updatedAt: string
 }
 
-export type PolicyStatus = 'Draft' | 'Signing' | 'Finish' | 'Rejected'
+export type PolicyStatus = 'Draft' | 'Signing' | 'Finish' | 'Rejected' | 'Void'

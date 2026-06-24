@@ -16,7 +16,8 @@ const statusConfig: Record<string, { label: string; color: string }> = {
   Draft:    { label: '待審核', color: 'orange' },
   Signing:  { label: '審核中', color: 'blue' },
   Finish:   { label: '已生效', color: 'green' },
-  Rejected: { label: '已取消', color: 'grey' }
+  Rejected: { label: '審核拒絕', color: 'red' },
+  Cancelled: { label: '已取消', color: 'grey' }
 }
 
 function onCancelClick(plan: PlanSummary) {
@@ -55,7 +56,7 @@ function onDownload(plan: PlanSummary) {
     <div v-else-if="plans.length === 0" class="column items-center q-py-xl text-grey">
       <q-icon name="description" size="56px" class="q-mb-md" />
       <div>目前沒有保單紀錄</div>
-      <q-btn flat color="green" label="立即投保" to="/policy" class="q-mt-md" />
+      <q-btn flat color="green" label="立即投保" to="/client/policy" class="q-mt-md" />
     </div>
 
     <div v-else class="column q-gutter-md">
