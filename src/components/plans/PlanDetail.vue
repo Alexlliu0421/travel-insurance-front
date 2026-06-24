@@ -5,17 +5,18 @@ import { usePlans } from '../../composables/usePlans'
 const emit = defineEmits<{ (e: 'back'): void }>()
 const { selectedPlan, loading, error, cancel, download } = usePlans()
 
-const CANCELLABLE_STATUSES = ['Draft', 'Signing']
-const DOWNLOADABLE_STATUSES = ['Draft', 'Signing', 'Finish']
+const CANCELLABLE_STATUSES = ['DRAFT', 'SIGNING']
+const DOWNLOADABLE_STATUSES = ['DRAFT', 'SIGNING', 'FINISH']
 
 const showCancelDialog = ref(false)
 const cancelReason = ref('')
 
 const statusConfig: Record<string, { label: string; color: string }> = {
-  Draft:    { label: '待審核', color: 'orange' },
-  Signing:  { label: '審核中', color: 'blue' },
-  Finish:   { label: '已生效', color: 'green' },
-  Rejected: { label: '已取消', color: 'grey' }
+  DRAFT:    { label: '待審核', color: 'orange' },
+  SIGNING:  { label: '審核中', color: 'blue' },
+  FINISH:   { label: '已生效', color: 'green' },
+  REJECTED: { label: '審核駁回', color: 'red' },
+  VOID: { label: '已取消', color: 'grey' }
 }
 
 const formatCurrency = (val: number) =>

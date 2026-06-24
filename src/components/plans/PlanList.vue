@@ -5,18 +5,19 @@ import type { PlanSummary } from '../../types/plans'
 
 const { plans, loading, error, cancel, download, selectPlan } = usePlans()
 
-const CANCELLABLE_STATUSES = ['Draft', 'Signing']
-const DOWNLOADABLE_STATUSES = ['Draft', 'Signing', 'Finish']
+const CANCELLABLE_STATUSES = ['DRAFT', 'SIGNING']
+const DOWNLOADABLE_STATUSES = ['DRAFT', 'SIGNING', 'FINISH']
 
 const showCancelDialog = ref(false)
 const cancelReason = ref('')
 const targetPlan = ref<PlanSummary | null>(null)
 
 const statusConfig: Record<string, { label: string; color: string }> = {
-  Draft:    { label: '待審核', color: 'orange' },
-  Signing:  { label: '審核中', color: 'blue' },
-  Finish:   { label: '已生效', color: 'green' },
-  Rejected: { label: '已取消', color: 'grey' }
+  DRAFT:    { label: '待審核', color: 'orange' },
+  SIGNING:  { label: '審核中', color: 'blue' },
+  FINISH:   { label: '已生效', color: 'green' },
+  REJECTED: { label: '審核駁回', color: 'red' },
+  VOID: { label: '已取消', color: 'grey' }
 }
 
 function onCancelClick(plan: PlanSummary) {
@@ -55,7 +56,7 @@ function onDownload(plan: PlanSummary) {
     <div v-else-if="plans.length === 0" class="column items-center q-py-xl text-grey">
       <q-icon name="description" size="56px" class="q-mb-md" />
       <div>目前沒有保單紀錄</div>
-      <q-btn flat color="green" label="立即投保" to="/policy" class="q-mt-md" />
+      <q-btn flat color="green" label="立即投保" to="/client/policy" class="q-mt-md" />
     </div>
 
     <div v-else class="column q-gutter-md">
