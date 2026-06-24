@@ -73,7 +73,7 @@ function onDownload() {
           </div> -->
           <div class="row">
             <div class="text-grey col-5">投保日期</div>
-            <div class="col">{{ selectedPlan.createdAt }}</div>
+            <div class="col">{{ selectedPlan.createdDate }}</div>
           </div>
         </div>
       </q-card-section>

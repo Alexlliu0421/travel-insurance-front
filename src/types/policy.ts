@@ -44,9 +44,9 @@ export interface PolicyDetail {
   basePremium: number
   finalPremium: number
   status: PolicyStatus
-  lastReviewDate: string | null
-  createdAt: string
-  updatedAt: string
+  lastReviewedDate: string | null
+  createdDate: string
+  updatedDate: string
 }
 
 export type PolicyStatus = 'DRAFT' | 'SIGNING' | 'FINISH' | 'REJECTED' | 'VOID'

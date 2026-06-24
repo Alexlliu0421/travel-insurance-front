@@ -10,7 +10,7 @@ export interface PlanSummary {
   coverageAmount: number
   finalPremium: number
   status: PolicyStatus
-  createdAt: string
+  createdDate: string
 }
 
 export interface CancelRequest {
