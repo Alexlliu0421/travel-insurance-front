@@ -45,9 +45,10 @@ function isValidTaiwanId(id: string): boolean {
   return sum % 10 === 0
 }
 
-// 身分證字號驗證：先檢查格式（含真檢查碼），格式對了才打 API 確認沒被註冊過
+// 身分證字號驗證：依序檢查「空白」→「格式（含真檢查碼）」→「是否已被註冊」
 // async 函式搭配 lazy-rules，只會在欄位失焦時驗證一次，不會每打一個字就打 API
 const idNumberRule = async (val: string) => {
+  if (!val ) return '身分證字號不可為空白'
   if (!isValidTaiwanId(val)) return '身分證字號格式錯誤'
   try {
     const res = await checkIdNumberExists(val)
@@ -59,8 +60,10 @@ const idNumberRule = async (val: string) => {
   }
 }
 
-// Email 驗證：邏輯跟身分證字號一樣，先檢查格式再打 API
+
+// Email 驗證：邏輯跟身分證字號一樣，依序檢查「空白」→「格式」→「是否已被註冊」
 const emailRule = async (val: string) => {
+  if (!val ) return 'Email不可為空白'
   if (!/^[\w.+-]+@[\w-]+\.[a-zA-Z]{2,}$/.test(val)) return 'Email 格式錯誤'
   try {
     const res = await checkEmailExists(val)
@@ -70,12 +73,14 @@ const emailRule = async (val: string) => {
   }
 }
 
-const phoneRule = (val: string) =>
-  /^09\d{8}$/.test(val) || '手機號碼格式錯誤'
+const phoneRule = (val: string) => {
+  if (!val || val.length === 0) return '手機號碼不可為空白'
+  return /^09\d{8}$/.test(val) || '手機號碼格式錯誤'
+}
 
 // 通用的「不可為空值」規則，傳入欄位名稱顯示在錯誤訊息裡
 const requiredRule = (label: string) => (val: string) =>
-  (val && val.length > 0) || `${label}不可為空值`
+  (val && val.length > 0) || `${label}不可為空白`
 
 // 職業選項：對應後端 occupation_rates 的新版英文代碼
 const occupationOptions = [

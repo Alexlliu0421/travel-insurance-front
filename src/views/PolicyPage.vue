@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import NavBar from '../components/NavBar.vue'
 import QuoteForm from '../components/policy/QuoteForm.vue'
 import QuoteResult from '../components/policy/QuoteResult.vue'
@@ -10,6 +11,7 @@ type Step = 'quote' | 'result' | 'apply' | 'done'
 const stepOrder: Step[] = ['quote', 'result', 'apply', 'done']
 
 const step = ref<Step>('quote')
+const router = useRouter()
 const completedSteps = ref<Set<Step>>(new Set())
 const { policyDetail, resetQuote } = usePolicy()
 
@@ -60,7 +62,6 @@ function onRestart() {
           @update:model-value="onStepperUpdate"
           flat
           color="green"
-          class="q-mb-lg"
           header-nav
         >
           <q-step
@@ -92,6 +93,13 @@ function onRestart() {
         <QuoteForm v-show="step === 'quote'" @done="onQuoteDone" />
         <QuoteResult v-show="step === 'result'" @confirm="onConfirmQuote" @back="step = 'quote'" />
         <ApplyForm v-show="step === 'apply'" @done="onApplyDone" @back="step = 'result'" />
+        <q-btn
+          flat
+          label="取消投保"
+          icon="arrow_back"
+          class="q-mt-lg"
+          @click="router.push('/client')"
+        />
 
         <div v-if="step === 'done'" class="column items-center q-py-xl">
           <q-icon name="task_alt" size="72px" color="green" />
@@ -99,7 +107,7 @@ function onRestart() {
           <div class="text-grey q-mb-xs">保單號碼：{{ policyDetail?.policyNumber }}</div>
           <div class="text-grey q-mb-xl">目前狀態：{{ policyDetail?.status }}</div>
           <div class="row q-gutter-md">
-            <q-btn flat color="green" label="查看我的保單" to="/plans" />
+            <q-btn flat color="green" label="查看我的保單" to="/client/plans" />
             <q-btn unelevated color="green" label="再投一張" @click="onRestart" />
           </div>
         </div>

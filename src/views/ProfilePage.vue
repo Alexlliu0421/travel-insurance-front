@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import NavBar from '../components/NavBar.vue'
 import ProfileView from '../components/profile/ProfileView.vue'
 import ProfileEditForm from '../components/profile/ProfileEditForm.vue'
@@ -7,12 +8,21 @@ import { useProfile } from '../composables/useProfile'
 
 const { profile, loading, error, getProfile } = useProfile()
 const isEditing = ref(false)
+const router = useRouter()
 
 onMounted(() => getProfile())
 
 function onEditSaved() {
   isEditing.value = false
   getProfile()
+}
+
+function goBack() {
+  if (window.history.length > 1) {
+    router.back()
+  } else {
+    router.push('/')
+  }
 }
 </script>
 
@@ -24,8 +34,10 @@ function onEditSaved() {
 
     <q-page-container>
       <q-page class="q-pa-lg" style="max-width: 640px; margin: 0 auto;">
-
-        <div class="text-h5 text-weight-bold q-mb-lg">個人資料</div>
+        <div class="row items-center q-mb-lg">
+          <q-btn flat round icon="arrow_back" @click="goBack" />
+          <div class="text-h5 text-weight-bold q-ml-sm">個人資料</div>
+        </div>
 
         <!-- loading -->
         <div v-if="loading" class="column items-center q-py-xl">

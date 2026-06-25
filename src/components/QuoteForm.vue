@@ -1,6 +1,37 @@
 <script setup lang="ts">
 import { useQuote } from '../composables/useQuote'
+import { computed, ref, watch } from 'vue'
 
+// 被保人生日改成年/月/日三個下拉選單，取代原本的日曆元件
+// 原因：要選 85 歲以上的生日時，日曆要一年一年往回翻，操作太麻煩
+const currentYear = new Date().getFullYear()
+const birthYear = ref<number | null>(null)
+const birthMonth = ref<number | null>(null)
+const birthDay = ref<number | null>(null)
+
+// 年份選單：從今年往回推 100 年（涵蓋85歲以上的測試情境）
+const yearOptions = Array.from({ length: 101 }, (_, i) => currentYear - i)
+const monthOptions = Array.from({ length: 12 }, (_, i) => i + 1)
+const dayOptions = Array.from({ length: 31 }, (_, i) => i + 1)
+
+// 三個下拉都選好後，組合成 YYYY-MM-DD 字串，寫回 insuredBirthDate
+// padStart(2, '0') 確保月、日是兩位數（例如 5 要變成 05），符合日期格式
+watch([birthYear, birthMonth, birthDay], ([y, m, d]) => {
+  if (y && m && d) {
+    const mm = String(m).padStart(2, '0')
+    const dd = String(d).padStart(2, '0')
+    insuredBirthDate.value = `${y}-${mm}-${dd}`
+  } else {
+    insuredBirthDate.value = ''
+  }
+})
+
+// 三個都選完才顯示錯誤訊息，避免使用者選到一半就被提示「不可為空白」
+const birthErrorMsg = computed(() => {
+  if (!birthYear.value || !birthMonth.value || !birthDay.value) return ''
+  const res = birthRule(insuredBirthDate.value)
+  return typeof res === 'string' ? res : ''
+})
 const {
   departureDate, returnDate, insuredBirthDate, insuredGender, insuredOccupationCode, coverageId,
   insuredDays,
@@ -79,8 +110,21 @@ const birthRule = (val: string) => {
             投保天數：{{ insuredDays }} 天
           </div>
 
-          <q-input v-model="insuredBirthDate" type="date" label="被保人生日" outlined class="q-mb-md" :rules="[birthRule]"
-            lazy-rules />
+          <div class="q-mb-md">
+            <div class="text-caption q-mb-xs">被保人生日</div>
+            <div class="row q-col-gutter-sm">
+              <div class="col-4">
+                <q-select v-model="birthYear" :options="yearOptions" label="年" outlined dense />
+              </div>
+              <div class="col-4">
+                <q-select v-model="birthMonth" :options="monthOptions" label="月" outlined dense />
+              </div>
+              <div class="col-4">
+                <q-select v-model="birthDay" :options="dayOptions" label="日" outlined dense />
+              </div>
+            </div>
+            <div v-if="birthErrorMsg" class="text-negative text-caption q-mt-xs">{{ birthErrorMsg }}</div>
+          </div>
 
           <div class="q-mb-md">
             <div class="text-caption q-mb-xs">被保人性別</div>
