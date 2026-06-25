@@ -62,15 +62,6 @@ function onDownload() {
             <div class="text-grey col-5">保單號碼</div>
             <div class="col">{{ selectedPlan.policyNumber }}</div>
           </div>
-          <!-- <div class="row">
-            <div class="text-grey col-5">狀態</div>
-            <div class="col">
-              <q-badge
-                :color="statusConfig[selectedPlan.status]?.color ?? 'grey'"
-                :label="statusConfig[selectedPlan.status]?.label ?? selectedPlan.status"
-              />
-            </div>
-          </div> -->
           <div class="row">
             <div class="text-grey col-5">投保日期</div>
             <div class="col">{{ selectedPlan.createdDate }}</div>
@@ -122,13 +113,6 @@ function onDownload() {
     </q-banner>
 
     <div class="row q-gutter-sm justify-end">
-      <!-- <q-btn
-        flat
-        label="回到保單列表"
-        icon="arrow_back"
-        @click="emit('back')"
-      /> -->
-
       <q-btn
         flat
         icon="download"
