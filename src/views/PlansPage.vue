@@ -7,7 +7,10 @@ import { usePlans } from '../composables/usePlans'
 
 const { getPlans, selectedPlan, clearSelectedPlan } = usePlans()
 
-onMounted(() => getPlans())
+onMounted(() => {
+  clearSelectedPlan()
+  getPlans()
+})
 
 function onBack() {
   clearSelectedPlan()
@@ -21,7 +24,7 @@ function onBack() {
     </q-header>
 
     <q-page-container>
-      <q-page class="q-pa-lg" style="max-width: 720px; margin: 0 auto;">
+      <q-page class="q-pa-lg" style="max-width: 680px; margin: 0 auto;">
 
         <!-- 列表視圖 -->
         <PlanList
