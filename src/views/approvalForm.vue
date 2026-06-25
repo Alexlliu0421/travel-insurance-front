@@ -44,7 +44,13 @@ const executeSubmit = async () => {
     });
     router.push('/approval/worklist');
   } catch (err: any) {
-    errorMessage.value = '操作失敗: ' + (err.response?.data?.message || '系統錯誤');
+    // 1. 先用 console.log 看一下結構到底長怎樣
+    console.log('完整的錯誤物件:', err);
+    console.log('後端回傳的 data:', err.response?.data);
+    
+    // 2. 優化取值邏輯
+    const msg = err.response?.data?.message || err.response?.data || err.message || '系統錯誤';
+    errorMessage.value = '操作失敗: ' + msg;
   }
 };
 
