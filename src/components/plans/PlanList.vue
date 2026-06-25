@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { usePlans } from '../../composables/usePlans'
 import type { PlanSummary } from '../../types/plans'
 
 const { plans, loading, error, cancel, download, selectPlan } = usePlans()
+const router = useRouter()
 
 const CANCELLABLE_STATUSES = ['DRAFT', 'SIGNING']
 const DOWNLOADABLE_STATUSES = ['DRAFT', 'SIGNING', 'FINISH']
@@ -39,11 +41,22 @@ function onDownload(plan: PlanSummary) {
   if (!DOWNLOADABLE_STATUSES.includes(plan.status)) return
   download(plan.policyId, plan.policyNumber)
 }
+
+function goBack() {
+  if (window.history.length > 1) {
+    router.back()
+  } else {
+    router.push('/')
+  }
+}
 </script>
 
 <template>
   <div>
-    <div class="text-h5 text-weight-bold q-mb-lg">我的保單</div>
+    <div class="row items-center q-mb-lg">
+      <q-btn flat round icon="arrow_back" @click="goBack" />
+      <div class="text-h5 text-weight-bold q-ml-sm">我的保單</div>
+    </div>
 
     <div v-if="loading" class="column items-center q-py-xl">
       <q-spinner size="40px" color="green" />

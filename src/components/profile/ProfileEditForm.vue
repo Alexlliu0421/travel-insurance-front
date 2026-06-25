@@ -11,6 +11,15 @@ const emit = defineEmits<{
 
 const { loading, error, update } = useProfile()
 
+const occupationOptions = [
+  '辦公室內勤 / 行政人員 / 櫃台人員',
+  '學生 / 專職家庭主婦 / 退休人員',
+  '餐飲服務 / 零售門市 / 業務外勤 ',
+  '勞動製造 / 技術維修 / 司機運輸',
+  '航空機組員 / 船員 / 導遊領隊',
+  '營建工地現場、高空電力、前線救援'
+]
+
 const form = reactive<ProfileUpdateRequest>({
   name: props.profile.name,
   phone: props.profile.phone ?? '',
@@ -53,10 +62,12 @@ async function onSubmit() {
           label="國籍"
           outlined
         />
-        <q-input
+        <q-select
           v-model="form.occupationName"
-          label="職業"
+          :options="occupationOptions"
+          label="被保人職業"
           outlined
+          :rules="[val => !!val || '請選擇職業']"
         />
 
         <q-banner v-if="error" class="bg-red-1 text-red" rounded>
