@@ -6,19 +6,19 @@ import NavBar from '../components/NavBar.vue';
 import LoginModal from '../components/LoginModal.vue';
 import { useApproval } from '../composables/useApproval';
 import { statusMap, actionMap, getStatusColor } from '../constants/approvalMap';
+import { showNotify } from '../utils/notifyUtils'; // 匯入工具函式
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const { fetchPolicyDetail, submitAction } = useApproval();
 const formatDate = (isoString: string) => isoString?.replace('T', ' ').split('.')[0] || '';
-// 正確處理 router.params.policyId 的型別
+
 const rawPolicyId = route.params.policyId;
 const policyId = Array.isArray(rawPolicyId) ? rawPolicyId[0] : (rawPolicyId as string);
 
 const policyDetail = ref<any>({});
 const remark = ref('');
-const errorMessage = ref('');
 const showLoginModal = ref(false);
 const showConfirmDialog = ref(false);
 const pendingAction = ref('');
@@ -42,27 +42,23 @@ const executeSubmit = async () => {
       action: pendingAction.value,
       remark: remark.value
     });
+    showNotify('操作成功', 'positive');
     router.push('/approval/worklist');
   } catch (err: any) {
-    // 1. 先用 console.log 看一下結構到底長怎樣
-    console.log('完整的錯誤物件:', err);
-    console.log('後端回傳的 data:', err.response?.data);
-    
-    // 2. 優化取值邏輯
-    const msg = err.response?.data?.message || err.response?.data || err.message || '系統錯誤';
-    errorMessage.value = '操作失敗: ' + msg;
+    const msg = err.response?.data?.message || err.message || '系統錯誤';
+    showNotify('操作失敗: ' + msg, 'negative');
   }
 };
 
 onMounted(async () => {
   if (!policyId) {
-    errorMessage.value = '參數錯誤：找不到保單編號';
+    showNotify('參數錯誤：找不到保單編號', 'negative');
     return;
   }
   try {
     policyDetail.value = await fetchPolicyDetail(policyId);
   } catch (err) {
-    errorMessage.value = '無法取得保單資料';
+    showNotify('無法取得保單資料', 'negative');
   }
 });
 </script>
@@ -77,13 +73,6 @@ onMounted(async () => {
       <q-page padding>
         <div class="q-pa-md" style="max-width: 800px; margin: 0 auto;">
           <q-btn flat icon="arrow_back" label="返回工作清單" @click="goBack" class="q-mb-md" />
-
-          <q-banner v-if="errorMessage" inline-actions rounded class="bg-red text-white q-mb-md">
-            {{ errorMessage }}
-            <template v-slot:action>
-              <q-btn flat label="關閉" @click="errorMessage = ''" />
-            </template>
-          </q-banner>
 
           <q-card flat bordered>
             <q-card-section class="bg-primary text-white">
