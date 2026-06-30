@@ -1,47 +1,52 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { Notify } from 'quasar';
 import type { QTableColumn } from 'quasar';
 import NavBar from '../components/NavBar.vue';
 import LoginModal from '../components/LoginModal.vue';
 import type { Policy, HistoryLog } from '../types/approval';
 import { statusMap, actionMap, getStatusColor } from '../constants/approvalMap';
-import { useApproval } from '../composables/useApproval'; 
+import { useApproval } from '../composables/useApproval';
+import { showNotify } from '../utils/notifyUtils';
 
 const router = useRouter();
 const { fetchPolicies, fetchHistory } = useApproval();
+
 const showLoginModal = ref(false);
 const policyList = ref<Policy[]>([]);
 const historyLogs = ref<HistoryLog[]>([]);
 const showDialog = ref(false);
 const selectedPolicyNumber = ref('');
 const loading = ref(false);
+
+// 新增狀態篩選與搜尋變數
 const searchQuery = ref('');
+const statusFilter = ref('ALL');
+
 const handleOpenLogin = () => showLoginModal.value = true;
 const goBack = () => router.push('/approval/worklist');
 const formatDate = (isoString: string) => isoString?.replace('T', ' ').split('.')[0] || '';
+
 // 表格定義
 const columns: QTableColumn[] = [
-  { name: 'policy_number', label: '保單號碼', field: 'policy_number', align: 'left', required: true },
-  { name: 'agent_name', label: '業務員', field: 'agent_name', align: 'left' },
-  { name: 'status', label: '狀態', field: 'status', align: 'left' },
-  { name: 'reviewer_name', label: '最後審核人', field: 'reviewer_name', align: 'left' },
-  { name: 'last_reviewed_date',label: '審核時間',field: 'last_reviewed_date',align: 'left',
-    format: (val: any) => formatDate(val)
-  }
+  { name: 'policy_number', label: '保單號碼', field: 'policy_number', align: 'left', style: 'width: 200px' },
+  { name: 'agent_name', label: '業務員', field: 'agent_name', align: 'left', style: 'width: 150px' },
+  { name: 'status', label: '狀態', field: 'status', align: 'center', style: 'width: 120px' },
+  { name: 'reviewer_name', label: '最後審核人', field: 'reviewer_name', align: 'left', style: 'width: 150px' },
+  { name: 'last_reviewed_date', label: '審核時間', field: 'last_reviewed_date', align: 'left', style: 'width: 200px', format: (val: any) => formatDate(val) }
 ];
 
+// 前端篩選邏輯：同時過濾狀態與關鍵字
 const filteredPolicies = computed(() => {
-  if (!searchQuery.value) return policyList.value;
-  const query = searchQuery.value.toLowerCase();
-  return policyList.value.filter(p => 
-    (p.policy_number?.toLowerCase().includes(query)) ||
-    (p.insured_name?.toLowerCase().includes(query))
-  );
+  return policyList.value.filter(p => {
+    const matchesStatus = statusFilter.value === 'ALL' || p.status === statusFilter.value;
+    const query = searchQuery.value.toLowerCase();
+    const matchesSearch = !query || 
+                          p.policy_number?.toLowerCase().includes(query) || 
+                          p.insured_name?.toLowerCase().includes(query);
+    return matchesStatus && matchesSearch;
+  });
 });
-
-
 
 // 點擊事件
 const onRowClick = async (_evt: any, row: any) => {
@@ -54,7 +59,7 @@ const onRowClick = async (_evt: any, row: any) => {
   try {
     historyLogs.value = await fetchHistory(policy.policy_id);
   } catch (err) {
-    Notify.create({ type: 'negative', message: '讀取歷程失敗' });
+    showNotify('讀取歷程失敗', 'negative');
   } finally {
     loading.value = false;
   }
@@ -64,10 +69,11 @@ onMounted(async () => {
   try {
     policyList.value = await fetchPolicies();
   } catch (err) {
-    Notify.create({ type: 'negative', message: '無法載入保單列表' });
+    showNotify('無法載入保單列表', 'negative');
   }
 });
 </script>
+
 <template>
   <q-layout view="lHh Lpr lFf">
     <q-header elevated>
@@ -79,15 +85,35 @@ onMounted(async () => {
     <q-page-container>
       <q-page padding>
         <div class="q-pa-md">
-          <div class="row q-gutter-md q-mb-md">
+          <div class="row q-gutter-md q-mb-md items-center">
             <q-btn flat icon="arrow_back" label="返回工作清單" @click="goBack" />
+            
+            <q-btn-toggle
+              v-model="statusFilter"
+              dense
+              unelevated
+              color="white"
+              text-color="grey-8"
+              toggle-color="primary"
+              toggle-text-color="white"
+              style="border: 1px solid #e0e0e0; border-radius: 6px; box-shadow: none;"
+              :options="[
+                { label: '全部', value: 'ALL' },
+                { label: '簽核中', value: 'SIGNING' },
+                { label: '已結案', value: 'FINISH' },
+                { label: '已駁回', value: 'REJECTED' },
+                { label: '已作廢', value: 'VOID' }
+              ]"
+            />
+            
             <q-space />
+            
             <q-input 
               v-model="searchQuery" 
               outlined 
               dense 
-              placeholder="搜尋保單號碼..." 
-              style="width: 300px;"
+              placeholder="搜尋保單號碼/姓名..." 
+              style="width: 250px;"
             >
               <template v-slot:append>
                 <q-icon name="search" />
@@ -122,6 +148,7 @@ onMounted(async () => {
               <q-space />
               <q-btn icon="close" flat round dense v-close-popup />
             </q-card-section>
+            
             <q-card-section class="q-pa-lg">
               <q-spinner v-if="loading" color="primary" size="2em" class="q-ma-md" />
               <div v-else-if="historyLogs.length === 0" class="text-center text-grey">暫無歷程紀錄</div>
