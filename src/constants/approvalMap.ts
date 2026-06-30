@@ -3,7 +3,8 @@ export const statusMap: Record<string, string> = {
   'DRAFT': '待審核',
   'FINISH': '已核准',
   'REJECTED': '已退件',
-  'SIGNING': '審核中'
+  'SIGNING': '審核中',
+  'VOID': '已作廢'
 };
 
 // 動作中文對應表
