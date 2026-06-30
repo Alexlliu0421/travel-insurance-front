@@ -90,14 +90,19 @@ onMounted(async () => {
             
             <q-btn-toggle
               v-model="statusFilter"
-              push
-              glossy
+              dense
+              unelevated
+              color="white"
+              text-color="grey-8"
               toggle-color="primary"
+              toggle-text-color="white"
+              style="border: 1px solid #e0e0e0; border-radius: 6px; box-shadow: none;"
               :options="[
                 { label: '全部', value: 'ALL' },
                 { label: '簽核中', value: 'SIGNING' },
                 { label: '已結案', value: 'FINISH' },
-                { label: '已駁回', value: 'REJECTED' }
+                { label: '已駁回', value: 'REJECTED' },
+                { label: '已作廢', value: 'VOID' }
               ]"
             />
             

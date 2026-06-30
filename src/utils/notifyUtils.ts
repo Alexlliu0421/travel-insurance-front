@@ -1,5 +1,6 @@
 // src/utils/notifyUtils.ts
 import { Notify } from 'quasar';
+
 let dismissPreviousNotify: (() => void) | null = null;
 
 export const showNotify = (message: string, type: 'positive' | 'negative') => {
